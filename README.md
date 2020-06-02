@@ -46,22 +46,23 @@ Nous savons que la cible s’est hébergée à l’hôtel « Black Rain » et qu
 
 > **_Question :_** Quel filtre avez-vous utilisé
 > 
-> **_Réponse :_** 
+> **_Réponse :_** `wlan.fc.type_subtype == 4`
 
 ---
 > **_Question :_** Quel est l’adresse MAC de la cible ?
 > 
-> **_Réponse :_** 
+> **_Réponse :_** `fc:f1:36:22:49:74`
 
 ---
 > **_Question :_** Quel est le nom du constructeur de l’interface sans fils de la cible ?
 > 
-> **_Réponse :_** 
+> **_Réponse :_** Samsung Electronics Co.,Ltd
 
 ---
 > **_Question :_** Quel autres endroits la cible a-t-elle probablement visités ?
-> 
-> **_Réponse :_** 
+>
+> **_Réponse :_** Un boulangerie « Fleur de Pains », l'aéroport de Genève et une Migros
+> filtre : `wlan.sa == fc:f1:36:22:49:74`
 
 ---
 
@@ -81,6 +82,9 @@ Nous allons nous servir de l’outil ``aircrack-ng`` pour retrouver la clé de c
 
 * Copier [la capture chiffrée avec WEP](files/coursWLAN-WEP.cap)
 * Ouvrir le fichier avec Wireshark et essayer de lire son contenu. Utiliser des filtres d’affichage de protocoles connus (http, icmp). Est-ce que vous arrivez à trouver des trames contenant ces protocoles ? (normalement pas puisque le contenu est chiffré !)
+
+> **_Réponse :_** Il n'y a qu'une trame DHCP qui est visible. Sinon les filtre `tcp`, `udp` et `icmp` ne retourne rien.
+
 * Utiliser ``aircrack-ng`` pour récupérer la clé de chiffrement du réseau WEP. Si vous utilisez une distribution Kali, aircrack est déjà installé. Sinon, renseignez-vous sur Internet pour l'installer sur votre système.
 
 ```
@@ -103,21 +107,23 @@ Maintenant que vous avez la clé WEP, configurez la dans Wireshark afin de déch
 
 * Essayez à nouveau de lire le contenu de la capture. Utilisez encore une fois des filtres de protocoles connus (http, icmp). Est-ce que vous arrivez à trouver des trames contenant ces protocoles cette fois-ci ?
 
+> **_Réponse :_** Oui sans problème.
+
 * Répondre aux questions suivantes :
 
 > **_Question :_** Combien de temps avez-vous attendu pour obtenir la clé WEP ?
 > 
-> **_Réponse :_** 
+> **_Réponse :_** Environ 0.8 seconde
 
 ---
 > **_Montrer une capture d'écran de l'obtention de la clé WEP_**
 > 
-> **_Capture ici_** 
+> ![image-20200602170417068](images/image-20200602170417068.png)
 
 ---
 > **_Question :_** Arrivez-vous à récupérer les informations d’identification (credentials) de l’authentification basique http contenue dans la capture ?
 > 
-> **_Réponse :_** 
+> **_Réponse :_**  Oui : `Basic YWRtaW46YWRtaW4=` ce qui donne le user `admin` et le password `admin`. On n'aurait pas eu besoin de la capture pour tester ces identifiants !
 
 ---
 
@@ -143,8 +149,12 @@ Nous utiliserons Wireshark pour trouver l’authentification WPA contenue dans l
 * Analyser les messages du 4-way handshake. En particulier, essayer de trouver les chiffres aléatoires (Nonces) échangés entre le client et l’AP.
 
 > **_Fournir une capture d'écran des chiffres aléatoires_**
-> 
-> **_Capture ici_** 
+>
+> ![image-20200602171144610](images/image-20200602171144610.png)
+>
+> `60:cb:80:6f:53:19:78:f2:b6:b1:8d:1c:ad:68:55:e5:92:33:37:64:79:12:25:fa:89:ac:74:e6:0d:12:d9:71`
+>
+> `72:f6:4c:c6:0d:16:d2:c6:f6:e6:1c:3e:a6:a3:96:1f:2a:96:51:32:49:18:d2:6f:70:9c:48:a0:e0:0c:51:d3`
 
 ---
 
@@ -166,12 +176,12 @@ aircrack-ng <nom-du-fichier-capture> -w <nom-du-dictionnaire>
 
 > **_Question :_** Combien de temps avez-vous attendu pour obtenir la passphrase WPA ?
 > 
-> **_Réponse :_** 
+> **_Réponse_** : 3.4 secondes
 
 ---
 > **_Montrer une capture d'écran de l'obtention de la passphrase WPA_**
 > 
-> **_Capture ici_** 
+> ![image-20200602171914574](images/image-20200602171914574.png)
 
 ---
 > **_Question :_** Lors de la capture, la cible a fait un « ping » sur un serveur. Arrivez-vous à dire de quel serveur il s’agit ?
@@ -179,9 +189,9 @@ aircrack-ng <nom-du-fichier-capture> -w <nom-du-dictionnaire>
 > 
 > **_Réponse :_** 
 > 
-> Adresse IP du serveur : ?
+> Adresse IP du serveur : `31.13.64.35`
 >
-> Nom de Domaine : ?
+> Nom de Domaine : `edge-star-mini-shv-01-amt2.facebook.com`
 
 
 
@@ -193,11 +203,9 @@ Nous avons enlevé une seule trame (choisie stratégiquement) du fichier de capt
 
 > **_Question :_** Est-ce que vous arrivez à refaire l'exercice ? Pourquoi ou pourquoi pas ?
 > 
-> **_Réponse :_** 
+> **_Réponse :_** Non, aircrack ne detecte plus de réseau wifi "hackable".
 
 ---
 > **_Question :_** Sur la base de votre réponse précédente, arrivez-vous à déduire quelle trame a été effacée ?
 
-> 
-> **_Réponse :_** 
-> 
+> **_Réponse :_** Une trame de l'échange Diffie-Helman. En comparant les deux fichier on sais mêmet que c'est le message 2 / 4.
